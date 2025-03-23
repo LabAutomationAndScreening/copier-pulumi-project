@@ -80,6 +80,6 @@ jobs:
           echo ${{ needs.lint.result }}
           echo ${{ needs.get-values.result }}
       - name: fail if prior job failure
-        if: needs.lint.result != 'success' || needs.get-values.result != 'success'
+        if: needs.lint.result != 'success' || (needs.get-values.result != 'success' && needs.get-values.result != 'skipped')
         run: |
           exit 1{% endraw %}
