@@ -1,0 +1,21 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      args:
+        REPO_NAME: copier-pulumi-project
+    # You can run `devcontainer-info content-url` in codespaces to see what image base is
+    volumes:
+      - ..:/workspaces/copier-pulumi-project:cached
+      # Break out the venv folder as a separate docker volume for better performance on Windows hosts
+      - python_venv:/workspaces/copier-pulumi-project/.venv
+    command: sleep infinity
+    ports:
+      - "54802:2222"
+    environment:
+      - AWS_PROFILE=localstack
+      - AWS_DEFAULT_REGION=us-east-1
+
+
+volumes:
+  python_venv: {}

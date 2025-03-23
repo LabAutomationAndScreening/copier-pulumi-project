@@ -1,0 +1,19 @@
+[project]
+name = "copier-pulumi-project"
+version = "0.1.0"
+description = "Template for a Pulumi Project that is just creating infrastructure (no application code)"
+readme = "README.md"
+requires-python = ">=3.12.7"
+dependencies = [
+    # Managed by upstream template
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "pytest-randomly>=3.16.0",
+    "pyright[nodejs]>=1.1.397",
+    "copier>=9.5.0",
+    "copier-templates-extensions>=0.3.0"
+
+    # Specific to this template
+
+
+]
