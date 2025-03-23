@@ -13,18 +13,18 @@ repos:
     hooks:
       - id: uv-check
         name: check pyproject.toml for valid uv config
-        entry: bash -c 'uv lock --check'
+        entry: bash -c 'uv lock --check --directory=./infrastructure'
         language: system
         pass_filenames: false
         verbose: true
-        files: "^pyproject.toml$|^uv.lock$"
+        files: "^infrastructure/pyproject.toml$|^infrastructure/uv.lock$"
 
       - id: sync-dependencies-on-commit
         name: ensure python dependencies are up to date during commits
         stages:
           [pre-commit]
           # When the install does change things, it exits 0, so needed to check for the phrase 'operations' in stdout in order to cause things pre-commit command to fail
-        entry: python -c "import subprocess,sys; results=subprocess.run(['uv', 'sync', '--frozen'],timeout=360,capture_output=True); print ('stdout- ' + results.stdout.decode('utf-8', 'strict')); print ('stderr- ' + results.stderr.decode('utf-8', 'strict')); sys.exit(int(results.returncode or int('Installed' in results.stdout.decode('utf-8', 'strict'))));"
+        entry: python -c "import subprocess,sys; results=subprocess.run(['uv', 'sync', '--frozen', '--directory=./infrastructure'],timeout=360,capture_output=True); print ('stdout- ' + results.stdout.decode('utf-8', 'strict')); print ('stderr- ' + results.stderr.decode('utf-8', 'strict')); sys.exit(int(results.returncode or int('Installed' in results.stdout.decode('utf-8', 'strict'))));"
         # don't pass filenames else the command line sees them twice
         pass_filenames: false
         language: system
@@ -34,7 +34,7 @@ repos:
       - id: sync-dependencies-post-checkout
         name: ensure python dependencies are up to date during checkouts
         stages: [post-checkout]
-        entry: bash -c 'uv sync --frozen'
+        entry: bash -c 'uv sync --frozen --directory=./infrastructure'
         pass_filenames: false
         language: system
         always_run: true
@@ -204,7 +204,7 @@ repos:
     hooks:
       - id: pyright
         name: pyright
-        entry: bash -c "uv run pyright"
+        entry: bash -c "uv  --directory=./infrastructure run pyright"
         files: '.+\.py$'
         # don't pass filenames else the command line sees them twice
         pass_filenames: false
