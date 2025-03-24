@@ -5,17 +5,13 @@
 
 
 # Usage
-To create a new repository using this template:
-1. Install `copier` and `copier-templates-extensions`. An easy way to do that is to copy the `.devcontainer/install-ci-tooling.sh` script in this repository into your new repo and then run it.
-2. Run copier to instantiate the template: `copier copy --trust gh:LabAutomationAndScreening/copier-pulumi-project.git`
-3. Run `uv lock` to generate the lock file
-4. Commit the changes
-5. Rebuild your new devcontainer
-
 
 
 # Development
-
+Run a Pulumi Preview:
+```bash
+uv --directory=./infrastructure run python -m infra.pulumi_deploy --stack=dev
+```
 
 ## Updating from the template
 This repository uses a copier template. To pull in the latest updates from the template, use the command:
