@@ -70,7 +70,7 @@ jobs:
           echo number=$(echo $short_number) >> $GITHUB_OUTPUT
           echo "PR number extracted as $full_number and truncated to $short_number"
 
- ephemeral-test:
+  ephemeral-test:
     uses: ./.github/workflows/pulumi-aws.yml
     if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     needs: [ lint, get-values ]
