@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v0.0.18
+_commit: v0.0.19-1-g8581dde
 _src_path: gh:LabAutomationAndScreening/copier-base-template.git
 description: Template for a Pulumi Project that is just creating infrastructure (no
     application code)
@@ -10,6 +10,7 @@ python_version: 3.12.7
 repo_name: copier-pulumi-project
 repo_org_name: LabAutomationAndScreening
 ssh_port_number: 54802
+template_might_want_to_install_aws_ssm_port_forwarding_plugin: false
 template_uses_javascript: false
 template_uses_pulumi: true
 template_uses_python: true
