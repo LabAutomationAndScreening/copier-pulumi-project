@@ -70,6 +70,54 @@ jobs:
           echo number=$(echo $short_number) >> $GITHUB_OUTPUT
           echo "PR number extracted as $full_number and truncated to $short_number"
 
+ ephemeral-test:
+    uses: ./.github/workflows/pulumi-aws.yml
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+    needs: [ lint, get-values ]
+    with:
+      AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
+      PULUMI_STACK_NAME: test-${{ needs.get-values.outputs.pr-short-num }}
+      PYTHON_VERSION: {% endraw %}{{ python_version }}{% raw %}
+      PROJECT_DIR: ./infrastructure
+      DEPLOY_SCRIPT_MODULE_NAME: infra
+      PULUMI_PREVIEW: true
+      PREVIEW_ROLE_NAME: InfraPreview--{% endraw %}{{ repo_name }}{% raw %}
+      PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
+      PULUMI_UP: true
+      PULUMI_DESTROY: true
+      AWS_ACCOUNT_ID: "{% endraw %}{{ aws_test_account_id }}{% raw %}"
+
+  pulumi-staging:
+    uses: ./.github/workflows/pulumi-aws.yml
+    needs: [ lint ]
+    with:
+      AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
+      PULUMI_STACK_NAME: staging
+      PYTHON_VERSION: {% endraw %}{{ python_version }}{% raw %}
+      PROJECT_DIR: ./infrastructure
+      DEPLOY_SCRIPT_MODULE_NAME: infra
+      PULUMI_PREVIEW: true
+      PREVIEW_ROLE_NAME: InfraPreview--{% endraw %}{{ repo_name }}{% raw %}
+      PULUMI_UP: ${{ github.ref == 'refs/heads/main' }}
+      PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
+      AWS_ACCOUNT_ID: "{% endraw %}{{ aws_staging_account_id }}{% raw %}"
+
+  pulumi-prod:
+    uses: ./.github/workflows/pulumi-aws.yml
+    if: github.ref == 'refs/heads/main'
+    needs: [ pulumi-staging ]
+    with:
+      AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
+      PULUMI_STACK_NAME: prod
+      PYTHON_VERSION: {% endraw %}{{ python_version }}{% raw %}
+      PROJECT_DIR: ./infrastructure
+      DEPLOY_SCRIPT_MODULE_NAME: infra
+      PULUMI_PREVIEW: true
+      PREVIEW_ROLE_NAME: InfraPreview--{% endraw %}{{ repo_name }}{% raw %}
+      PULUMI_UP: true
+      PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
+      AWS_ACCOUNT_ID: "{% endraw %}{{ aws_production_account_id }}{% raw %}"
+
   required-check:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
     needs: [ get-values, lint ]
@@ -78,8 +126,11 @@ jobs:
       - name: Show job status
         run: |
           echo ${{ needs.lint.result }}
+          echo ${{ needs.pulumi-staging.result }}
           echo ${{ needs.get-values.result }}
+          echo ${{ needs.ephemeral-test.result }}
+          echo ${{ needs.pulumi-prod.result }}
       - name: fail if prior job failure
-        if: needs.lint.result != 'success' || (needs.get-values.result != 'success' && needs.get-values.result != 'skipped')
+        if: needs.lint.result != 'success' || needs.pulumi-staging.result != 'success' || (needs.get-values.result != 'success' && needs.get-values.result != 'skipped') || (needs.ephemeral-test.result != 'success' && needs.ephemeral-test.result != 'skipped') || (needs.pulumi-prod.result != 'success' && needs.pulumi-prod.result != 'skipped')
         run: |
           exit 1{% endraw %}
