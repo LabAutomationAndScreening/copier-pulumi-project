@@ -101,6 +101,10 @@ aws_region_for_stack:
 
 # Questions specific to this template
 
+pulumi_infra_project_name:
+    type: str
+    help: What do you want to call the infrastructure pulumi project?
+    default: "{{ repo_name }}"
 
 # Additional Settings
 _min_copier_version: "9.4"
