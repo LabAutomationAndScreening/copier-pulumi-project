@@ -89,7 +89,6 @@ jobs:
 
   pulumi-staging:
     uses: ./.github/workflows/pulumi-aws.yml
-    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     needs: [ lint ]
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
@@ -132,6 +131,6 @@ jobs:
           echo ${{ needs.ephemeral-test.result }}
           echo ${{ needs.pulumi-prod.result }}
       - name: fail if prior job failure
-        if: needs.lint.result != 'success' || (needs.pulumi-staging.result != 'success' && needs.pulumi-staging.result != 'skipped') || (needs.get-values.result != 'success' && needs.get-values.result != 'skipped') || (needs.ephemeral-test.result != 'success' && needs.ephemeral-test.result != 'skipped') || (needs.pulumi-prod.result != 'success' && needs.pulumi-prod.result != 'skipped')
+        if: needs.lint.result != 'success' || needs.pulumi-staging.result != 'success' || (needs.get-values.result != 'success' && needs.get-values.result != 'skipped') || (needs.ephemeral-test.result != 'success' && needs.ephemeral-test.result != 'skipped') || (needs.pulumi-prod.result != 'success' && needs.pulumi-prod.result != 'skipped')
         run: |
           exit 1{% endraw %}
