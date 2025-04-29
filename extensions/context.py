@@ -10,17 +10,17 @@ class ContextUpdater(ContextHook):
 
     @override
     def hook(self, context: dict[Any, Any]) -> dict[Any, Any]:
-        context["uv_version"] = "0.6.11"
-        context["pnpm_version"] = "10.8.1"
+        context["uv_version"] = "0.6.17"
+        context["pnpm_version"] = "10.10.0"
         context["pre_commit_version"] = "4.2.0"
-        context["pyright_version"] = "1.1.399"
+        context["pyright_version"] = "1.1.400"
         context["pytest_version"] = "8.3.5"
         context["pytest_randomly_version"] = "3.16.0"
         context["pytest_cov_version"] = "6.0.0"
         context["copier_version"] = "9.6.0"
         context["copier_templates_extension_version"] = "0.3.0"
         context["sphinx_version"] = "8.1.3"
-        context["pulumi_version"] = "3.162.0"
+        context["pulumi_version"] = "3.163.0"
         context["pulumi_aws_version"] = "6.77.0"
         context["pulumi_aws_native_version"] = "1.27.0"
         context["pulumi_command_version"] = "1.0.2"
@@ -33,7 +33,7 @@ class ContextUpdater(ContextHook):
         context["strawberry_graphql_version"] = "0.264.0"
         context["fastapi_version"] = "0.115.12"
         context["uvicorn_version"] = "0.34.0"
-        context["lab_auto_pulumi_version"] = "0.1.10"
+        context["lab_auto_pulumi_version"] = "0.1.11"
 
         context["nuxt_ui_version"] = "^3.0.2"
         context["nuxt_version"] = "^3.16.2"
