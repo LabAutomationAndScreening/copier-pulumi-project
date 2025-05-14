@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v0.0.46-6-g6baa79e
+_commit: v0.0.46-7-g53efed7
 _src_path: gh:LabAutomationAndScreening/copier-base-template.git
 description: Template for a Pulumi Project that is just creating infrastructure (no
     application code)
