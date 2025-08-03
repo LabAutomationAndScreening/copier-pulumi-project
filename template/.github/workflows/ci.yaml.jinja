@@ -83,6 +83,8 @@ jobs:
   required-check:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
     needs: [ get-values, ephemeral-test, pulumi-staging, pulumi-prod ]
+    permissions:
+      statuses: write # needed for updating status on Dependabot PRs
     if: always()
     steps:
       - name: Show job status
