@@ -50,6 +50,9 @@ jobs:
   pulumi-staging:
     uses: ./.github/workflows/pulumi-aws.yml
     needs: [ pre-commit ]
+    permissions:
+      id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
+      contents: write # needed for mutex
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: staging
@@ -66,6 +69,9 @@ jobs:
     uses: ./.github/workflows/pulumi-aws.yml
     if: github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.ref == 'refs/heads/main'
     needs: [ pulumi-staging ]
+    permissions:
+      id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
+      contents: write # needed for mutex
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: prod
