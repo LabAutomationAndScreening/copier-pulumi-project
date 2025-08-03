@@ -17,6 +17,8 @@ permissions:
 jobs:
   get-values:
     uses: ./.github/workflows/get-values.yaml
+    permissions:
+      contents: write # needed for updating dependabot branches
 
   pre-commit:
     needs: [ get-values ]
