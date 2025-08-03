@@ -12,9 +12,9 @@ env:
   PRE_COMMIT_HOME: ${{ github.workspace }}/.precommit_cache
 
 permissions:
-    id-token: write
-    contents: write # needed for mutex, and updating dependabot branches
-    statuses: write # needed for updating status on Dependabot PRs
+  id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
+  contents: write # needed for mutex, and updating dependabot branches
+  statuses: write # needed for updating status on Dependabot PRs
 
 jobs:
   get-values:
@@ -23,6 +23,9 @@ jobs:
   pre-commit:
     needs: [ get-values ]
     uses: ./.github/workflows/pre-commit.yaml
+    permissions:
+      id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
+      contents: write # needed for mutex
     with:
       python-version: {% endraw %}{{ python_version }}{% raw %}
 
@@ -30,6 +33,9 @@ jobs:
     uses: ./.github/workflows/pulumi-aws.yml
     if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     needs: [ pre-commit, get-values ]
+    permissions:
+      id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
+      contents: write # needed for mutex
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: test-${{ needs.get-values.outputs.pr-short-num }}
