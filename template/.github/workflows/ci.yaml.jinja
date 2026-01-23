@@ -17,8 +17,26 @@ jobs:
     permissions:
       contents: write # needed for updating dependabot branches
 
+  check-skip-duplicate:
+    runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
+    permissions:
+      contents: read
+      pull-requests: read # needed to check if PR exists for current branch
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@{% endraw %}{{ gha_checkout }}{% raw %}
+        with:
+          persist-credentials: false
+      - id: check
+        uses: ./.github/actions/check-skip-duplicates
+
   pre-commit:
-    needs: [ get-values ]
+    needs:
+      - get-values
+      - check-skip-duplicate
+    if: needs.check-skip-duplicate.outputs.should-run == 'true'
     uses: ./.github/workflows/pre-commit.yaml
     permissions:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
@@ -28,11 +46,16 @@ jobs:
 
   ephemeral-test:
     uses: ./.github/workflows/pulumi-aws.yml
-    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
-    needs: [ pre-commit, get-values ]
+    needs:
+      - pre-commit
+      - get-values
+      - check-skip-duplicate
+    if: needs.check-skip-duplicate.outputs.should-run == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group')
+
     permissions:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
+      pull-requests: write # needed to potentially post the preview on the PR as a comment
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: test-${{ needs.get-values.outputs.pr-short-num }}
@@ -48,10 +71,14 @@ jobs:
 
   pulumi-staging:
     uses: ./.github/workflows/pulumi-aws.yml
-    needs: [ pre-commit ]
+    needs:
+      - pre-commit
+      - check-skip-duplicate
+    if: needs.check-skip-duplicate.outputs.should-run == 'true'
     permissions:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
+      pull-requests: write # needed to potentially post the preview on the PR as a comment
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: staging
@@ -63,14 +90,18 @@ jobs:
       PULUMI_UP: ${{ github.ref == 'refs/heads/main' }}
       PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_staging_account_id }}{% raw %}"
+      SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
 
   pulumi-prod:
     uses: ./.github/workflows/pulumi-aws.yml
-    if: github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.ref == 'refs/heads/main'
-    needs: [ pulumi-staging ]
+    needs:
+      - pulumi-staging
+      - check-skip-duplicate
+    if: needs.check-skip-duplicate.outputs.should-run == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.ref == 'refs/heads/main')
     permissions:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
+      pull-requests: write # needed to potentially post the preview on the PR as a comment
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: prod
@@ -82,10 +113,16 @@ jobs:
       PULUMI_UP: ${{ github.ref == 'refs/heads/main' }}
       PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_production_account_id }}{% raw %}"
+      SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
 
   required-check:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
-    needs: [ get-values, ephemeral-test, pulumi-staging, pulumi-prod ]
+    needs:
+      - get-values
+      - check-skip-duplicate
+      - ephemeral-test
+      - pulumi-staging
+      - pulumi-prod
     permissions:
       statuses: write # needed for updating status on Dependabot PRs
     if: always()
@@ -97,9 +134,17 @@ jobs:
           echo ${{ needs.ephemeral-test.result }}
           echo ${{ needs.pulumi-prod.result }}
       - name: fail if prior job failure
-        if: needs.pulumi-staging.result != 'success' || (needs.ephemeral-test.result != 'success' && needs.ephemeral-test.result != 'skipped') || (needs.pulumi-prod.result != 'success' && needs.pulumi-prod.result != 'skipped')
         run: |
-          exit 1
+          failure_pattern="^(failure|cancelled)$"
+
+          if [[ "${{ needs.check-skip-duplicate.result }}" =~ $failure_pattern ]] ||
+              [[ "${{ needs.ephemeral-test.result }}" =~ $failure_pattern ]] ||
+              [[ "${{ needs.pulumi-staging.result }}" =~ $failure_pattern ]] ||
+              [[ "${{ needs.pulumi-prod.result }}" =~ $failure_pattern ]]; then
+              echo "❌ One or more jobs failed or were cancelled"
+            exit 1
+          fi
+          echo "✅ All jobs completed successfully or were skipped"
       - name: Mark updated dependabot hash commit as succeeded
         if: ${{ needs.get-values.outputs.dependabot-commit-created == 'true' && github.event_name == 'push' }}
         env:
