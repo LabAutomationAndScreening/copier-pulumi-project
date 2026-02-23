@@ -115,10 +115,11 @@ jobs:
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_production_account_id }}{% raw %}"
       SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
 
-  required-check:
+  workflow-summary:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
     needs:
       - get-values
+      - pre-commit
       - check-skip-duplicate
       - ephemeral-test
       - pulumi-staging
@@ -135,16 +136,29 @@ jobs:
           echo ${{ needs.pulumi-prod.result }}
       - name: fail if prior job failure
         run: |
-          failure_pattern="^(failure|cancelled)$"
+          success_pattern="^(skipped|success)$" # these are the possibilities: https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#needs-context
 
-          if [[ "${{ needs.check-skip-duplicate.result }}" =~ $failure_pattern ]] ||
-              [[ "${{ needs.ephemeral-test.result }}" =~ $failure_pattern ]] ||
-              [[ "${{ needs.pulumi-staging.result }}" =~ $failure_pattern ]] ||
-              [[ "${{ needs.pulumi-prod.result }}" =~ $failure_pattern ]]; then
-              echo "❌ One or more jobs failed or were cancelled"
+          if [[ ! "${{ needs.check-skip-duplicate.result }}" =~ $success_pattern ]] ||
+            [[ ! "${{ needs.pre-commit.result }}" =~ $success_pattern ]] ||
+            [[ ! "${{ needs.ephemeral-test.result }}" =~ $success_pattern ]] ||
+            [[ ! "${{ needs.pulumi-staging.result }}" =~ $success_pattern ]] ||
+            [[ ! "${{ needs.pulumi-prod.result }}" =~ $success_pattern ]]; then
+            echo "❌ One or more jobs did not finish with skipped or success"
             exit 1
           fi
-          echo "✅ All jobs completed successfully or were skipped"
+          echo "✅ All jobs finished with skipped or success"
+
+      - name: Mark the required-check as succeeded so the PR can be merged
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            -X POST -H "Accept: application/vnd.github.v3+json" \
+            "${{ github.event.pull_request.statuses_url }}" \
+            -f state=success -f context="required-check" -f description="✅ All required checks passed in the job triggered by pull_request" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
       - name: Mark updated dependabot hash commit as succeeded
         if: ${{ needs.get-values.outputs.dependabot-commit-created == 'true' && github.event_name == 'push' }}
         env:

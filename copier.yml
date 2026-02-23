@@ -59,7 +59,6 @@ python_package_registry:
     default: PyPI
 
 
-
 aws_identity_center_id:
     type: str
     help: What's the ID of your Organization's AWS Identity center, e.g. d-9145c20053?
@@ -124,6 +123,17 @@ pulumi_infra_project_name:
     type: str
     help: What do you want to call the infrastructure pulumi project?
     default: "{{ repo_name }}"
+
+_tasks:
+  - command: |
+        if [ -f ruff.toml ]; then
+            echo "Updating ruff target-version from python_version..."
+            py_major_minor="$(printf '%s' '{{ python_version }}' | cut -d. -f1,2)"
+            py_tag="py$(printf '%s' "$py_major_minor" | tr -d '.')"
+            sed -i -E 's/^target-version = "py[0-9]+"/target-version = "'"$py_tag"'"/' ruff.toml
+        else
+            echo "ruff.toml not found; skipping Ruff target-version update."
+        fi
 
 # Additional Settings
 _min_copier_version: "9.4"
