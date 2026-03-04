@@ -79,6 +79,8 @@ runs:
         aws-region: ${{ inputs.aws-region }}
 
     - name: Run CLI
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         output=$(uv --directory ${{ github.workspace }}/${{ inputs.project-dir }} run python -m ${{ inputs.deploy-script-module-name }}.${{ inputs.deploy-script-name }} --stack=${{ inputs.stack-name }} ${{ inputs.cli-action }})
         header=":eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:"
