@@ -56,6 +56,7 @@ jobs:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
       pull-requests: write # needed to potentially post the preview on the PR as a comment
+      actions: read # needed to fetch job URL for PR comments when output is too long
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: test-${{ needs.get-values.outputs.pr-short-num }}
@@ -79,6 +80,7 @@ jobs:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
       pull-requests: write # needed to potentially post the preview on the PR as a comment
+      actions: read # needed to fetch job URL for PR comments when output is too long
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: staging
@@ -102,6 +104,7 @@ jobs:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
       pull-requests: write # needed to potentially post the preview on the PR as a comment
+      actions: read # needed to fetch job URL for PR comments when output is too long
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: prod
