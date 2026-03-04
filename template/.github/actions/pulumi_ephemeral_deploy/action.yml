@@ -91,11 +91,13 @@ runs:
         \`\`\`
         EOF
 
-        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65535 ]; then
+        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65536 ]; then
+          job_url=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
+            --jq '.jobs[] | select(.name == "${{ github.job }}") | .html_url')
           cat > /tmp/pulumi-preview-comment.md << EOF
         $header
 
-        Output was too long to display here. [View the full output in the Actions run.](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        Output was too long to display here. [View the full output in the Actions job.]($job_url)
         EOF
         fi
       shell: bash
