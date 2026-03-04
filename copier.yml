@@ -1,8 +1,4 @@
 # Questions specific to this template
-pulumi_infra_project_name:
-    type: str
-    help: What do you want to call the infrastructure pulumi project?
-    default: "{{ repo_name }}"
 
 
 
@@ -121,6 +117,10 @@ aws_region_for_stack:
 
 
 # Questions specific to this template
+pulumi_infra_project_name:
+    type: str
+    help: What do you want to call the infrastructure pulumi project?
+    default: "{{ repo_name }}"
 
 _tasks:
   - command: |
