@@ -81,13 +81,23 @@ runs:
     - name: Run CLI
       run: |
         output=$(uv --directory ${{ github.workspace }}/${{ inputs.project-dir }} run python -m ${{ inputs.deploy-script-module-name }}.${{ inputs.deploy-script-name }} --stack=${{ inputs.stack-name }} ${{ inputs.cli-action }})
+        header=":eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:"
+
         cat > /tmp/pulumi-preview-comment.md << EOF
-        :eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:
+        $header
 
         \`\`\`bash
         $output
         \`\`\`
         EOF
+
+        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65535 ]; then
+          cat > /tmp/pulumi-preview-comment.md << EOF
+        $header
+
+        Output was too long to display here. [View the full output in the Actions run.](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        EOF
+        fi
       shell: bash
 
     - name: Comment the Preview on the Pull Request
