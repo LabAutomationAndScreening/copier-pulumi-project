@@ -105,6 +105,7 @@ permissions:
   id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
   contents: write # needed for mutex
   pull-requests: write # needed to post the preview on the PR as a comment
+  actions: read # needed to fetch job URL for PR comments when output is too long
 
 jobs:
   pulumi:
