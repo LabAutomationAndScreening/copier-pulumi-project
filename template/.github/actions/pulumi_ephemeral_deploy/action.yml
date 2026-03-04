@@ -79,24 +79,13 @@ runs:
         aws-region: ${{ inputs.aws-region }}
 
     - name: Run CLI
-      # apparently getting the stdout is nigh impossible in GHA, so this action helps
-      uses: mathiasvr/command-output@34408ea3d0528273faff3d9e201761ae96106cd0 # ratchet:mathiasvr/command-output@v2.0.0
-      id: pulumi-run
-      with:
-        # can't use working-directory with this action, so specifying it in the uv command
-        run: uv --directory ${{ github.workspace }}/${{ inputs.project-dir }} run python -m ${{ inputs.deploy-script-module-name }}.${{ inputs.deploy-script-name }} --stack=${{ inputs.stack-name }} ${{ inputs.cli-action }}
-        shell: bash
-
-    - name: Write Preview to File
-      if: ${{ inputs.show-preview-comment-on-pr == 'true' }}
-      env:
-        PULUMI_STDOUT: ${{ steps.pulumi-run.outputs.stdout }}
       run: |
+        output=$(uv --directory ${{ github.workspace }}/${{ inputs.project-dir }} run python -m ${{ inputs.deploy-script-module-name }}.${{ inputs.deploy-script-name }} --stack=${{ inputs.stack-name }} ${{ inputs.cli-action }})
         cat > /tmp/pulumi-preview-comment.md << EOF
         :eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:
 
         \`\`\`bash
-        $PULUMI_STDOUT
+        $output
         \`\`\`
         EOF
       shell: bash
