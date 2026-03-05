@@ -97,7 +97,7 @@ runs:
         \`\`\`
         EOF
 
-        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65536 ]; then
+        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 12 ]; then
           echo "github.job=${{ github.job }}"
           echo "caller-job-name=${{ inputs.caller-job-name }}"
           echo "run_id=${{ github.run_id }}"
