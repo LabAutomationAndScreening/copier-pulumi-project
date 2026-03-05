@@ -56,7 +56,6 @@ jobs:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
       pull-requests: write # needed to potentially post the preview on the PR as a comment
-      actions: read # needed to fetch job URL for PR comments when output is too long
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: test-${{ needs.get-values.outputs.pr-short-num }}
@@ -80,7 +79,6 @@ jobs:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
       pull-requests: write # needed to potentially post the preview on the PR as a comment
-      actions: read # needed to fetch job URL for PR comments when output is too long
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: staging
@@ -93,7 +91,6 @@ jobs:
       PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_staging_account_id }}{% raw %}"
       SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
-      CALLER_JOB_NAME: ${{ github.job }}
 
   pulumi-prod:
     uses: ./.github/workflows/pulumi-aws.yml
@@ -105,7 +102,6 @@ jobs:
       id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
       contents: write # needed for mutex
       pull-requests: write # needed to potentially post the preview on the PR as a comment
-      actions: read # needed to fetch job URL for PR comments when output is too long
     with:
       AWS_REGION: {% endraw %}{{ aws_region_for_stack }}{% raw %}
       PULUMI_STACK_NAME: prod
@@ -118,7 +114,6 @@ jobs:
       PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_production_account_id }}{% raw %}"
       SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
-      CALLER_JOB_NAME: ${{ github.job }}
 
   workflow-summary:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}

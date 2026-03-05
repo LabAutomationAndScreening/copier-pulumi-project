@@ -46,11 +46,6 @@ inputs:
     default: false
     required: false
     description: Whether or not to add a comment on to the PR with the pulumi preview details.
-  caller-job-name:
-    type: string
-    required: false
-    default: ''
-    description: The name of the calling job (e.g. "pulumi-prod"). Pass github.job from the calling workflow. Used to build a direct link to the job when the preview output is too long.
 
 
 
@@ -84,8 +79,6 @@ runs:
         aws-region: ${{ inputs.aws-region }}
 
     - name: Run CLI
-      env:
-        GH_TOKEN: ${{ github.token }}
       run: |
         output=$(uv --directory ${{ github.workspace }}/${{ inputs.project-dir }} run python -m ${{ inputs.deploy-script-module-name }}.${{ inputs.deploy-script-name }} --stack=${{ inputs.stack-name }} ${{ inputs.cli-action }})
         header=":eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:"
@@ -98,26 +91,13 @@ runs:
         \`\`\`
         EOF
 
-        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 12 ]; then
-          echo "github.job=${{ github.job }}"
-          echo "caller-job-name=${{ inputs.caller-job-name }}"
-          echo "run_id=${{ github.run_id }}"
-          jobs_json=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
-          echo "available job names:"
-          echo "$jobs_json" | jq -r '.jobs[].name'
-          job_url=$(echo "$jobs_json" | jq -r \
-            --arg job_name "${{ github.job }}" \
-            --arg caller "${{ inputs.caller-job-name }}" \
-            '.jobs[] | select(.name | contains($caller) and contains($job_name)) | .html_url')
-          echo "job_url=$job_url"
-          if [ -z "$job_url" ]; then
-            echo "ERROR: could not resolve job URL for job '${{ github.job }}'"
-            exit 1
-          fi
+        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65536 ]; then
           cat > /tmp/pulumi-preview-comment.md << EOF
         $header
 
-        Output was too long to display here. [View the full output in the Actions job.]($job_url)
+        Output was too long to display here.
+
+        [View the full output in the Actions run.](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         EOF
         fi
       shell: bash

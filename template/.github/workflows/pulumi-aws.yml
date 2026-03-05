@@ -91,11 +91,6 @@ on:
         required: false
         default: false
         type: boolean
-      CALLER_JOB_NAME:
-        description: 'The name of the calling job. Pass github.job from the calling workflow. Used to build a direct link to the job when preview output is too long.'
-        required: false
-        default: ''
-        type: string
     secrets:
       iac-github-api-tokens:
         description: 'API tokens to use for Github IaC deployment when not using AWS Secrets Manager'
@@ -110,7 +105,6 @@ permissions:
   id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
   contents: write # needed for mutex
   pull-requests: write # needed to post the preview on the PR as a comment
-  actions: read # needed to fetch job URL for PR comments when output is too long
 
 jobs:
   pulumi:
@@ -154,7 +148,6 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--destroy"
-          caller-job-name: ${{ github.job }}
 
       - name: Preview
         uses: ./.github/actions/pulumi_ephemeral_deploy
@@ -168,7 +161,6 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           show-preview-comment-on-pr: ${{ inputs.SHOW_PREVIEW_COMMENT_ON_PR }}
-          caller-job-name: ${{ inputs.CALLER_JOB_NAME }}
         timeout-minutes: 5 # apparently timeout-minutes only accepts literal values, it cannot evaluate expressions (e.g. workflow inputs)
 
       - name: Refresh
@@ -183,7 +175,6 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--refresh"
-          caller-job-name: ${{ github.job }}
 
       - name: Pulumi Up
         uses: ./.github/actions/pulumi_ephemeral_deploy
@@ -197,7 +188,6 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--up"
-          caller-job-name: ${{ github.job }}
 
       - name: Pulumi Final Destroy
         uses: ./.github/actions/pulumi_ephemeral_deploy
@@ -211,4 +201,3 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--destroy"
-          caller-job-name: ${{ github.job }}
