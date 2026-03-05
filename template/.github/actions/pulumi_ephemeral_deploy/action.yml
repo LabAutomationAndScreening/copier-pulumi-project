@@ -94,8 +94,17 @@ runs:
         EOF
 
         if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65536 ]; then
-          job_url=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
-            | jq -r --arg job_name "${{ github.job }}" '.jobs[] | select(.name == $job_name) | .html_url')
+          echo "github.job=${{ github.job }}"
+          echo "run_id=${{ github.run_id }}"
+          jobs_json=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
+          echo "available job names:"
+          echo "$jobs_json" | jq -r '.jobs[].name'
+          job_url=$(echo "$jobs_json" | jq -r --arg job_name "${{ github.job }}" '.jobs[] | select(.name == $job_name) | .html_url')
+          echo "job_url=$job_url"
+          if [ -z "$job_url" ]; then
+            echo "ERROR: could not resolve job URL for job '${{ github.job }}'"
+            exit 1
+          fi
           cat > /tmp/pulumi-preview-comment.md << EOF
         $header
 
