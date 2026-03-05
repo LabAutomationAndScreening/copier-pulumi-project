@@ -46,6 +46,10 @@ inputs:
     default: false
     required: false
     description: Whether or not to add a comment on to the PR with the pulumi preview details.
+  caller-job-name:
+    type: string
+    required: true
+    description: The name of the calling job (e.g. "pulumi-prod"). Pass ${{ github.job }} from the calling workflow. Used to build a direct link to the job when the preview output is too long.
 
 
 
@@ -95,11 +99,15 @@ runs:
 
         if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65536 ]; then
           echo "github.job=${{ github.job }}"
+          echo "caller-job-name=${{ inputs.caller-job-name }}"
           echo "run_id=${{ github.run_id }}"
           jobs_json=$(gh api "/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
           echo "available job names:"
           echo "$jobs_json" | jq -r '.jobs[].name'
-          job_url=$(echo "$jobs_json" | jq -r --arg job_name "${{ github.job }}" '.jobs[] | select(.name == $job_name) | .html_url')
+          job_url=$(echo "$jobs_json" | jq -r \
+            --arg job_name "${{ github.job }}" \
+            --arg caller "${{ inputs.caller-job-name }}" \
+            '.jobs[] | select(.name | contains($caller) and contains($job_name)) | .html_url')
           echo "job_url=$job_url"
           if [ -z "$job_url" ]; then
             echo "ERROR: could not resolve job URL for job '${{ github.job }}'"

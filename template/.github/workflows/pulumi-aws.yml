@@ -149,6 +149,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--destroy"
+          caller-job-name: ${{ github.job }}
 
       - name: Preview
         uses: ./.github/actions/pulumi_ephemeral_deploy
@@ -162,6 +163,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           show-preview-comment-on-pr: ${{ inputs.SHOW_PREVIEW_COMMENT_ON_PR }}
+          caller-job-name: ${{ github.job }}
         timeout-minutes: 5 # apparently timeout-minutes only accepts literal values, it cannot evaluate expressions (e.g. workflow inputs)
 
       - name: Refresh
@@ -176,6 +178,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--refresh"
+          caller-job-name: ${{ github.job }}
 
       - name: Pulumi Up
         uses: ./.github/actions/pulumi_ephemeral_deploy
@@ -189,6 +192,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--up"
+          caller-job-name: ${{ github.job }}
 
       - name: Pulumi Final Destroy
         uses: ./.github/actions/pulumi_ephemeral_deploy
@@ -202,3 +206,4 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           cli-action: "--destroy"
+          caller-job-name: ${{ github.job }}
