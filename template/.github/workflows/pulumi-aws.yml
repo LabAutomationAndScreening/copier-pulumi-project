@@ -91,6 +91,11 @@ on:
         required: false
         default: false
         type: boolean
+      CALLER_JOB_NAME:
+        description: 'The name of the calling job. Pass github.job from the calling workflow. Used to build a direct link to the job when preview output is too long.'
+        required: false
+        default: ''
+        type: string
     secrets:
       iac-github-api-tokens:
         description: 'API tokens to use for Github IaC deployment when not using AWS Secrets Manager'
@@ -163,7 +168,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
           aws-account-id: ${{ inputs.AWS_ACCOUNT_ID }}
           show-preview-comment-on-pr: ${{ inputs.SHOW_PREVIEW_COMMENT_ON_PR }}
-          caller-job-name: ${{ github.job }}
+          caller-job-name: ${{ inputs.CALLER_JOB_NAME }}
         timeout-minutes: 5 # apparently timeout-minutes only accepts literal values, it cannot evaluate expressions (e.g. workflow inputs)
 
       - name: Refresh

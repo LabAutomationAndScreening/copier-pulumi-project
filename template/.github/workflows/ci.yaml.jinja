@@ -93,6 +93,7 @@ jobs:
       PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_staging_account_id }}{% raw %}"
       SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
+      CALLER_JOB_NAME: ${{ github.job }}
 
   pulumi-prod:
     uses: ./.github/workflows/pulumi-aws.yml
@@ -117,6 +118,7 @@ jobs:
       PULUMI_UP_ROLE_NAME: InfraDeploy--{% endraw %}{{ repo_name }}{% raw %}
       AWS_ACCOUNT_ID: "{% endraw %}{{ aws_production_account_id }}{% raw %}"
       SHOW_PREVIEW_COMMENT_ON_PR: ${{ github.event_name == 'pull_request' }}
+      CALLER_JOB_NAME: ${{ github.job }}
 
   workflow-summary:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}

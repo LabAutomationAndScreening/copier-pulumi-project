@@ -48,7 +48,8 @@ inputs:
     description: Whether or not to add a comment on to the PR with the pulumi preview details.
   caller-job-name:
     type: string
-    required: true
+    required: false
+    default: ''
     description: The name of the calling job (e.g. "pulumi-prod"). Pass github.job from the calling workflow. Used to build a direct link to the job when the preview output is too long.
 
 
