@@ -81,8 +81,9 @@ runs:
     - name: Run CLI
       run: |
         output=$(uv --directory ${{ github.workspace }}/${{ inputs.project-dir }} run python -m ${{ inputs.deploy-script-module-name }}.${{ inputs.deploy-script-name }} --stack=${{ inputs.stack-name }} ${{ inputs.cli-action }})
-        header=":eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:"
+        echo "$output"
 
+        header=":eyes: **Pulumi Preview for ${{ inputs.deploy-script-module-name }} stack ${{ inputs.stack-name }}:** :eyes:"
         cat > /tmp/pulumi-preview-comment.md << EOF
         $header
 
@@ -92,7 +93,6 @@ runs:
         EOF
 
         if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65535 ]; then
-          echo "$output"
           cat > /tmp/pulumi-preview-comment.md << EOF
         $header
 
