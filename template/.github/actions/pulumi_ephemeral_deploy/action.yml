@@ -92,6 +92,7 @@ runs:
         EOF
 
         if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65535 ]; then
+          echo "$output"
           cat > /tmp/pulumi-preview-comment.md << EOF
         $header
 
