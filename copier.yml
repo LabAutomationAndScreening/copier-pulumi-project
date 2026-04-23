@@ -117,10 +117,20 @@ aws_region_for_stack:
 
 
 # Questions specific to this template
+
 pulumi_infra_project_name:
     type: str
     help: What do you want to call the infrastructure pulumi project?
     default: "{{ repo_name }}"
+
+
+# Questions managed by upstream template
+
+repo_names_for_codespaces_read_permissions:
+    type: str
+    help: Provide a comma-separated list of repository names only within this GitHub organization that you would like the codespace to have read access to (for example, private-template, not my-org/private-template)
+    default: ""
+
 
 _tasks:
   - command: |
@@ -139,7 +149,7 @@ _tasks:
         fi
 
 # Additional Settings
-_min_copier_version: "9.7"
+_min_copier_version: "9.8"
 
 _subdirectory: template
 
