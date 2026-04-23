@@ -11,6 +11,10 @@ env:
   PYTHONUNBUFFERED: True
   PRE_COMMIT_HOME: ${{ github.workspace }}/.precommit_cache
 
+permissions:
+  id-token: write # needed to assume OIDC roles (e.g. for downloading from CodeArtifact)
+  contents: read # need to explicitly provide this whenever defining permissions because the default value is 'none' for anything not explicitly set when permissions are defined
+
 jobs:
   get-values:
     uses: ./.github/workflows/get-values.yaml
@@ -19,6 +23,7 @@ jobs:
 
   check-skip-duplicate:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
+    timeout-minutes: {% endraw %}{{ gha_short_timeout_minutes }}{% raw %}
     permissions:
       contents: read
       pull-requests: read # needed to check if PR exists for current branch
@@ -31,6 +36,10 @@ jobs:
           persist-credentials: false
       - id: check
         uses: ./.github/actions/check-skip-duplicates
+
+  confirm-on-tagged-copier-template:
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/confirm-on-tagged-copier-template.yaml
 
   pre-commit:
     needs:
@@ -117,6 +126,7 @@ jobs:
 
   workflow-summary:
     runs-on: {% endraw %}{{ gha_linux_runner }}{% raw %}
+    timeout-minutes: {% endraw %}{{ gha_short_timeout_minutes }}{% raw %}
     needs:
       - get-values
       - pre-commit
@@ -128,18 +138,13 @@ jobs:
       statuses: write # needed for updating status on Dependabot PRs
     if: always()
     steps:
-      - name: Show job status
-        run: |
-          echo ${{ needs.pulumi-staging.result }}
-          echo ${{ needs.get-values.result }}
-          echo ${{ needs.ephemeral-test.result }}
-          echo ${{ needs.pulumi-prod.result }}
       - name: fail if prior job failure
         run: |
           success_pattern="^(skipped|success)$" # these are the possibilities: https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#needs-context
 
           if [[ ! "${{ needs.check-skip-duplicate.result }}" =~ $success_pattern ]] ||
             [[ ! "${{ needs.pre-commit.result }}" =~ $success_pattern ]] ||
+            [[ ! "${{ needs.confirm-on-tagged-copier-template.result }}" =~ $success_pattern ]]; then
             [[ ! "${{ needs.ephemeral-test.result }}" =~ $success_pattern ]] ||
             [[ ! "${{ needs.pulumi-staging.result }}" =~ $success_pattern ]] ||
             [[ ! "${{ needs.pulumi-prod.result }}" =~ $success_pattern ]]; then
@@ -149,7 +154,7 @@ jobs:
           echo "✅ All jobs finished with skipped or success"
 
       - name: Mark the required-check as succeeded so the PR can be merged
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -160,7 +165,7 @@ jobs:
             -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Mark updated dependabot hash commit as succeeded
-        if: ${{ needs.get-values.outputs.dependabot-commit-created == 'true' && github.event_name == 'push' }}
+        if: needs.get-values.outputs.dependabot-commit-created == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
