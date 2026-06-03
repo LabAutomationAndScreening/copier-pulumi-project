@@ -1,10 +1,9 @@
 {% raw %}version: 2
 updates:
-  - package-ecosystem: "uv"
-    directories:
-      - "/infrastructure"
+  - package-ecosystem: "devcontainers"
+    directory: "/"
     schedule:
-      interval: "weekly"
+      interval: weekly
       day: "monday"
       time: "16:00"
     open-pull-requests-limit: 5
@@ -12,6 +11,15 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-patch" # we don't want to be bothered with patch updates for anything except security updates
+  - package-ecosystem: "uv"
+    directories:
+      - "/infrastructure"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "16:00"
+    open-pull-requests-limit: 5
+    ignore:
       - dependency-name: "boto3" # boto3 gets patch updates way too frequently and they're usually not important
         update-types:
           - "version-update:semver-patch"
