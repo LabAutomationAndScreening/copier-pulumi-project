@@ -1,9 +1,10 @@
 # Changes here will be overwritten by Copier
-_commit: v0.0.115
+_commit: v0.0.131
 _src_path: gh:LabAutomationAndScreening/copier-base-template.git
+copier_answers_directory: .
 description: Template for a Pulumi Project that is just creating infrastructure (no
     application code)
-install_claude_cli: false
+install_claude_cli: true
 python_ci_versions:
 - 3.12.7
 - 3.13.9
@@ -15,7 +16,8 @@ ssh_port_number: 15003
 template_might_want_to_install_aws_ssm_port_forwarding_plugin: false
 template_might_want_to_use_python_asyncio: false
 template_might_want_to_use_vcrpy: false
-template_uses_javascript: false
+template_publishes_releases: false
 template_uses_pulumi: true
 template_uses_python: true
+template_uses_typescript: false
 
