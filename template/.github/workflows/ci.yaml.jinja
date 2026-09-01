@@ -143,7 +143,8 @@ jobs:
         run: |
           success_pattern="^(skipped|success)$" # these are the possibilities: https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#needs-context
 
-          if [[ ! "${{ needs.check-skip-duplicate.result }}" =~ $success_pattern ]] ||
+          if [[ ! "${{ needs.get-values.result }}" =~ $success_pattern ]] ||
+            [[ ! "${{ needs.check-skip-duplicate.result }}" =~ $success_pattern ]] ||
             [[ ! "${{ needs.pre-commit.result }}" =~ $success_pattern ]] ||
             [[ ! "${{ needs.ephemeral-test.result }}" =~ $success_pattern ]] ||
             [[ ! "${{ needs.pulumi-staging.result }}" =~ $success_pattern ]] ||
