@@ -318,6 +318,15 @@ repos:
         pass_filenames: false
         language: system
 
+      - id: task-list
+        # Schema validation cannot see across files: only Task itself resolves the include paths in the root shim and
+        # rejects a task name defined by two flattened includes. Listing is enough to trigger both errors.
+        name: validate taskfile includes and task names
+        entry: bash -c "task --list-all > /dev/null"
+        files: ^(Taskfile\.yaml|\.config/taskfiles/.*)$
+        pass_filenames: false
+        language: system
+
       - id: compute-devcontainer-context-hash
         # Devcontainer context --- this makes Github's "prebuild codespaces" feature work more intelligently for the "Configuration Change" trigger
         name: compute devcontainer context hash
