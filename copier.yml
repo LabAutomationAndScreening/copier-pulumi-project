@@ -184,6 +184,16 @@ _tasks:
             echo ".config/ruff.toml not found; skipping Ruff target-version update."
         fi
   - command: |
+        echo "Checking for .coveragerc in repo root config..."
+        if [ -f .config/.coveragerc ]; then
+            echo "Moving .coveragerc to infrastructure folder..."
+            mkdir -p infrastructure
+            mv .config/.coveragerc infrastructure/.coveragerc
+            echo ".coveragerc moved successfully"
+        else
+            echo ".coveragerc not found in repo root config"
+        fi
+  - command: |
         python3 '{{ _copier_conf.src_path }}/src/copier_tasks/copier_provenance.py' \
             '{{ _copier_conf.src_path }}/template' \
             '.' \
