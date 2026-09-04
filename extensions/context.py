@@ -31,7 +31,7 @@ class ContextUpdater(ContextHook):
         context["copier_version"] = "==9.17.1"
         context["copier_template_extensions_version"] = "==0.3.3"
         context["sphinx_version"] = "9.0.4"
-        context["pulumi_version"] = ">=3.262.0"
+        context["pulumi_version"] = ">=3.261.0"
         context["pulumi_aws_version"] = ">=7.44.0"
         context["pulumi_aws_native_version"] = ">=1.77.0"
         context["pulumi_command_version"] = ">=1.2.1"
