@@ -101,7 +101,8 @@ runs:
         \`\`\`
         EOF
 
-        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65535 ]; then
+        # the limit GitHub enforces is 65536 characters, leave room for the hidden comment tag marker prepended when posting
+        if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65000 ]; then
           resources_section=$(echo "$output" | sed -n '/^Resources:/,$p')
           cat > /tmp/pulumi-preview-comment.md << EOF
         $header
@@ -119,8 +120,8 @@ runs:
 
     - name: Comment the Preview on the Pull Request
       if: ${{ inputs.show-preview-comment-on-pr == 'true' }}
-      # pin this sha (v3.0.1) for extra security since this action has some permissions to write to the pull request comments
-      uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b
+      # a local action is used instead of a third party one since posting the comment requires write permissions on the pull request
+      uses: ./.github/actions/comment_pull_request
       with:
         file-path: /tmp/pulumi-preview-comment.md
         comment-tag: previewonpr-${{ inputs.deploy-script-module-name }}-${{ inputs.stack-name }}
