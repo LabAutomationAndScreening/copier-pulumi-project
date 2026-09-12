@@ -120,7 +120,6 @@ runs:
 
     - name: Comment the Preview on the Pull Request
       if: ${{ inputs.show-preview-comment-on-pr == 'true' }}
-      # a local action is used instead of a third party one since posting the comment requires write permissions on the pull request
       uses: ./.github/actions/comment_pull_request
       with:
         file-path: /tmp/pulumi-preview-comment.md
