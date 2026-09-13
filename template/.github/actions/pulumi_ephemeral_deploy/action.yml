@@ -101,7 +101,8 @@ runs:
         \`\`\`
         EOF
 
-        # the limit GitHub enforces is 65536 characters, leave room for the hidden comment tag marker prepended when posting
+        # the limit GitHub enforces is 65536 characters (https://github.com/orgs/community/discussions/27190),
+        # leave room for the hidden comment tag marker prepended when posting
         if [ $(wc -c < /tmp/pulumi-preview-comment.md) -gt 65000 ]; then
           # keep the last part of the section, so that the fallback comment is still under the limit even when the section itself is huge
           resources_section=$(echo "$output" | sed -n '/^Resources:/,$p' | tail -c 60000)
