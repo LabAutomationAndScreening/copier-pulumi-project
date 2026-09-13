@@ -31,8 +31,8 @@ runs:
         set -euo pipefail
 
         if [ -z "${PR_NUMBER}" ]; then
-          echo "::warning::No pull request number available in this event context, skipping the comment."
-          exit 0
+          echo "::error::No pull request number available in this event context. This action must run in a workflow triggered by a 'pull_request' event."
+          exit 1
         fi
 
         marker="<!-- comment-tag: ${COMMENT_TAG} -->"
