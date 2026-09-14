@@ -181,6 +181,7 @@
         "template/.github/ISSUE_TEMPLATE/feature-request.yml",
         "template/.github/ISSUE_TEMPLATE/tech-debt.yml",
         "template/.github/actions/check-skip-duplicates/action.yml",
+        "template/.github/actions/comment_pull_request/action.yml",
         "template/.github/actions/install_deps/action.yml",
         "template/.github/actions/pulumi_ephemeral_deploy/action.yml",
         "template/.github/actions/update-devcontainer-hash/action.yml",
